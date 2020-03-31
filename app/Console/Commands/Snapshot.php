@@ -46,16 +46,18 @@ class Snapshot extends Command
         //Input
         $content = File::get(base_path() . '/snapshot.json');
         $target_urls = json_decode($content, true);        
-        $timestamp = Carbon::now()->format('Y-m-d');
+        $timestamp = Carbon::now()->format('Y-m-d_H-i');
         
         //Configure ProgressBar
         ProgressBar::setFormatDefinition('custom', ' %current%/%max% [%bar%] %percent:3s%% - %elapsed:6s% - %message%');        
         $bar = $this->output->createProgressBar(count($target_urls));
         $bar->setFormat('custom');
         $bar->start();
-
+        $bar->setMessage('Starting');
+        
         //Take screenshots
         foreach ($target_urls as $name => $url) {
+            $bar->advance();
             $bar->setMessage('Processing ' . $name . ' - URL: ' . $url);            
             
             $parsedUrl = parse_url($url);
@@ -76,10 +78,7 @@ class Snapshot extends Command
                     ->setDelay(40000)
                     ->dismissDialogs()
                     ->save('output/' . $name . '_' . $timestamp . '_'. $domain . '_screenshot.png');
-            }
-                      
-            
-            $bar->advance();
+            }           
         }
         $bar->finish();
         $this->line('');
